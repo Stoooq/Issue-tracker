@@ -4,14 +4,14 @@ import { ErrorMessage, Spinner } from "@/app/components";
 import { issueSchema } from "@/app/validationSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Issue } from "@prisma/client";
-import { Button, Callout, TextField } from "@radix-ui/themes";
+import { Button, Callout, RadioGroup, TextField } from "@radix-ui/themes";
 import axios from "axios";
 import "easymde/dist/easymde.min.css";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import SimpleMDE from "react-simplemde-editor"
+import SimpleMDE from "react-simplemde-editor";
 
 type IssueFormData = z.infer<typeof issueSchema>;
 
@@ -38,7 +38,7 @@ const IssueForm = ({ issue }: Props) => {
 			if (issue) await axios.patch("/api/issues/" + issue.id, data);
 			else await axios.post("/api/issues", data);
 			router.push("/issues");
-			router.refresh()
+			router.refresh();
 		} catch (error) {
 			setSubmitting(false);
 			setError("An unexpected error occured");
@@ -68,8 +68,23 @@ const IssueForm = ({ issue }: Props) => {
 					)}
 				/>
 				<ErrorMessage>{errors.description?.message}</ErrorMessage>
+				{issue && (
+					<Controller
+						name="status"
+						control={control}
+						render={({ field }) => (
+							<RadioGroup.Root {...field} defaultValue={issue?.status}>
+								<RadioGroup.Item value="OPEN">Open</RadioGroup.Item>
+								<RadioGroup.Item value="IN_PROGRESS">
+									In Progress
+								</RadioGroup.Item>
+								<RadioGroup.Item value="CLOSED">Closed</RadioGroup.Item>
+							</RadioGroup.Root>
+						)}
+					/>
+				)}
 				<Button disabled={isSubmitting}>
-					{issue ? "Update Issue" : "Submit New Issue"}{' '}
+					{issue ? "Update Issue" : "Submit New Issue"}{" "}
 					{isSubmitting && <Spinner />}
 				</Button>
 			</form>
